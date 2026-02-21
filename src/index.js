@@ -7,7 +7,7 @@ const Surround = require('./modules/combat/Surround');
 
 // bot config
 const bot = mineflayer.createBot({
-  host: 'localhost',
+  host: '92.222.100.10',
   port: 25565,
   username: 'CrystalBot',
   version: '1.21.1',
