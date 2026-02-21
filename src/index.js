@@ -4,6 +4,10 @@ const mineflayer = require('mineflayer');
 const CrystalAura = require('./modules/combat/CrystalAura');
 const Surround = require('./modules/combat/Surround');
 
+// --- SET YOUR OWNER NAME HERE ---
+const OWNER_NAME = 'naya'; 
+// --------------------------------
+
 // bot config
 const bot = mineflayer.createBot({
   host: 'server.botfights.hackcraft.hackclub.com',
@@ -20,11 +24,9 @@ const surround = new Surround(bot);
 bot.on('spawn', () => {
   console.log('Bot spawned! Sending register command...');
   
-  // Replace 'YourPassword123' with the actual password you want to use
+  // Replace 'YourPassword123' with your chosen bot password
   bot.chat('/register YourPassword123 YourPassword123');
-  
-  // You might also need to login if you've already registered
-  // bot.chat('/login YourPassword123');
+  bot.chat('/login YourPassword123 YourPassword123');
 
   crystalAura.enable();
   surround.enable();
@@ -34,32 +36,33 @@ bot.on('spawn', () => {
 bot.on('messagestr', (message, messagePosition, jsonMsg) => {
   const msg = message.toLowerCase();
   
-  // This logs everything to your terminal so you can see if the bot "hears" you
+  // This logs everything to your terminal
   console.log(`[SERVER] ${message}`);
+
+  // SECURITY: Only respond to commands if the OWNER_NAME is in the chat message
+  if (!message.includes(OWNER_NAME)) return;
 
   // 1. Status Check
   if (msg.includes('.status')) {
     bot.chat(`I am at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
   }
 
-  // 2. Teleport (Tries to TP to the person who typed the command)
+  // 2. Teleport (Force TP to the Owner)
   if (msg.includes('.tp')) {
-    // This finds your name in a chat like "<Name> .tp"
-    const sender = message.split(' ')[0].replace(/[<>]/g, '');
-    bot.chat(`/tp CrystalBot ${sender}`);
+    bot.chat(`/tp CrystalBot ${OWNER_NAME}`);
   }
 
-  // 3. Simple Follow
+  // 3. Simple Follow (Fix: specifically looks for the Owner's body)
   if (msg.includes('.come')) {
-    const sender = message.split(' ')[0].replace(/[<>]/g, '');
-    const target = bot.players[sender]?.entity;
+    const target = bot.players[OWNER_NAME]?.entity;
     if (target) {
+      bot.chat("Walking to you, Master!");
       bot.lookAt(target.position);
       bot.setControlState('forward', true);
-      setTimeout(() => bot.setControlState('forward', false), 2000);
-      bot.chat("Walking to you!");
+      // Walks for 3 seconds to ensure it gets close
+      setTimeout(() => bot.setControlState('forward', false), 3000);
     } else {
-      bot.chat("I can't see you!");
+      bot.chat("I can't see you! Use .tp to bring me closer first.");
     }
   }
 
