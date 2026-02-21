@@ -3,7 +3,7 @@
 // lots of TODOs cuz not fully done
 
 const Targeting = require('../../services/Targeting')
-const DamageCalc = require('../services/DamageCalc');
+const DamageCalc = require('../../services/DamageCalc');
 const Rotation = require('../services/Rotation');
 const Inventory = require('../../services/Inventory');
 const config = require('../../config');
