@@ -1,7 +1,6 @@
 // mineflayer bot for crystal pvp
-// written by alex - dont judge my code lol
+// written by alex & helper - lets gooooo
 const mineflayer = require('mineflayer');
-const config = require('./config');
 const CrystalAura = require('./modules/combat/CrystalAura');
 const Surround = require('./modules/combat/Surround');
 
@@ -10,7 +9,8 @@ const bot = mineflayer.createBot({
   host: 'server.botfights.hackcraft.hackclub.com',
   username: 'CrystalBot',
   version: '1.21.1',
-  auth: 'offline' 
+  auth: 'offline',
+  checkTimeoutInterval: 60000
 });
 
 // load modules
@@ -18,52 +18,46 @@ const crystalAura = new CrystalAura(bot);
 const surround = new Surround(bot);
 
 bot.on('spawn', () => {
-  console.log('bot spawned! lets gooooo');
-  console.log('loading modules...'); // debug
+  console.log('Bot spawned! Modules loading...');
   crystalAura.enable();
   surround.enable();
 });
 
-bot.on('kicked', (reason) => {
-  console.log('kicked:', reason);
-  console.log('wtf why did we get kicked'); // TODO: handle this better
-});
-
-bot.on('error', (err) => {
-  console.log('error:', err);
-  // idk what to do here lol
-});
-
-// FIXME: add more event handlers
-// --- COMMAND HANDLER ---
-bot.on('chat', (username, message) => {
-  if (username === bot.username) return; // Don't talk to yourself
-  
+// --- COMMAND HANDLER (STRICTER LISTENER) ---
+bot.on('messagestr', (message, messagePosition, jsonMsg) => {
   const msg = message.toLowerCase();
+  
+  // This logs everything to your terminal so you can see if the bot "hears" you
+  console.log(`[SERVER] ${message}`);
 
-  // 1. Teleport Command (If you have OP/Permissions on the server)
-  if (msg === '.tp') {
-    bot.chat(`/tp ${bot.username} ${username}`);
-    bot.chat(`On my way to ${username}!`);
+  // 1. Status Check
+  if (msg.includes('.status')) {
+    bot.chat(`I am at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
   }
 
-  // 2. Simple Follow (Basic version)
-  if (msg === '.come') {
-    const target = bot.players[username]?.entity;
-    if (!target) {
-      bot.chat("I can't see you! Get closer so I can load your player model.");
-      return;
+  // 2. Teleport (Tries to TP to the person who typed the command)
+  if (msg.includes('.tp')) {
+    // This finds your name in a chat like "<Name> .tp"
+    const sender = message.split(' ')[0].replace(/[<>]/g, '');
+    bot.chat(`/tp CrystalBot ${sender}`);
+  }
+
+  // 3. Simple Follow
+  if (msg.includes('.come')) {
+    const sender = message.split(' ')[0].replace(/[<>]/g, '');
+    const target = bot.players[sender]?.entity;
+    if (target) {
+      bot.lookAt(target.position);
+      bot.setControlState('forward', true);
+      setTimeout(() => bot.setControlState('forward', false), 2000);
+      bot.chat("Walking to you!");
+    } else {
+      bot.chat("I can't see you!");
     }
-    const pos = target.position;
-    bot.chat("Walking to you...");
-    // This uses the built-in physics to look and walk
-    bot.lookAt(pos);
-    bot.setControlState('forward', true);
-    setTimeout(() => bot.setControlState('forward', false), 2000); // Walk for 2 seconds
   }
 
-  // 3. Toggle Crystal Aura
-  if (msg === '.ca') {
+  // 4. Toggle Crystal Aura
+  if (msg.includes('.ca')) {
     if (crystalAura.enabled) {
       crystalAura.disable();
       bot.chat("Crystal Aura: DISABLED");
@@ -72,15 +66,17 @@ bot.on('chat', (username, message) => {
       bot.chat("Crystal Aura: ENABLED");
     }
   }
-
-  // 4. Status Check
-  if (msg === '.status') {
-    bot.chat(`I'm at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
-  }
 });
 
-// Handle death so it doesn't just sit at the respawn screen
 bot.on('death', () => {
-  console.log('rip');
+  console.log('Bot died! Respawning in 1 second...');
   setTimeout(() => bot.respawn(), 1000);
+});
+
+bot.on('kicked', (reason) => {
+  console.log('Kicked for:', reason);
+});
+
+bot.on('error', (err) => {
+  console.log('Connection error:', err);
 });
