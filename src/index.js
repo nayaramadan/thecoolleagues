@@ -86,15 +86,24 @@ bot.on('messagestr', (message) => {
   }
 });
 
-  if (msg.includes('wear')) {
-    const armorTypes = ['helmet', 'chestplate', 'leggings', 'boots'];
-    armorTypes.forEach(type => {
-      const item = bot.inventory.items().find(i => i.name.includes(type));
-      if (item) bot.equip(item, type);
-    });
-    bot.chat("Armor equipped!");
-  }
+bot.on('playerCollect', (collector, itemEntity) => {
+  if (collector.username !== bot.username) return;
 
+  // Wait a split second for the item to enter the inventory
+  setTimeout(() => {
+    const armorTypes = ['helmet', 'chestplate', 'leggings', 'boots'];
+    
+    for (const type of armorTypes) {
+      // Find the best armor piece for this slot
+      const armor = bot.inventory.items().find(item => item.name.includes(type));
+      if (armor) {
+        bot.equip(armor, type)
+          .then(() => console.log(`Equipped ${armor.name}`))
+          .catch((err) => console.log(`Armor Error: ${err.message}`));
+      }
+    }
+  }, 500);
+});
 bot.on('death', () => {
   console.log('Bot died! Respawning...');
   setTimeout(() => bot.respawn(), 1000);
