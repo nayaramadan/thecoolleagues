@@ -2,9 +2,9 @@
 // based on meteor client but ported to js
 // lots of TODOs cuz not fully done
 
-const Targeting = require('../../services/Targeting')
+const Targeting = require('../../services/Targeting');
 const DamageCalc = require('../../services/DamageCalc');
-const Rotation = require('../services/Rotation');
+const Rotation = require('../../services/Rotation'); // FIXED THIS ONE
 const Inventory = require('../../services/Inventory');
 const config = require('../../config');
 const Vec3 = require('vec3');
