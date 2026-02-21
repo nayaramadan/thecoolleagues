@@ -11,6 +11,7 @@ const bot = mineflayer.createBot({
   port: 25565,
   username: 'CrystalBot',
   version: '1.21.1'
+  auth: 'offline' 
 });
 
 // load modules
