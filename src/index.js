@@ -51,12 +51,13 @@ bot.on('messagestr', (message) => {
   }
 
   // 2. Teleport (Usage: !hi tp)
+  // 2. Teleport (Usage: !hi tp)
   if (msg.includes('tp')) {
-    if (sender) {
-      console.log(`Attempting to TP to detected sender: ${sender}`);
-      bot.chat(`/tp CrystalBot ${sender}`);
-    }
+    const MY_NAME = 'naya'; // <--- Make sure this is your EXACT ingame name
+    bot.chat(`/tp CrystalBot ${MY_NAME}`);
+    console.log(`Forcing TP to owner: ${MY_NAME}`);
   }
+
 
   // 3. Simple Follow (Usage: !hi come)
   if (msg.includes('come')) {
