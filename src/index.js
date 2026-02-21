@@ -35,5 +35,52 @@ bot.on('error', (err) => {
 });
 
 // FIXME: add more event handlers
-// bot.on('chat', ...)
-// bot.on('death', ...)
+// --- COMMAND HANDLER ---
+bot.on('chat', (username, message) => {
+  if (username === bot.username) return; // Don't talk to yourself
+  
+  const msg = message.toLowerCase();
+
+  // 1. Teleport Command (If you have OP/Permissions on the server)
+  if (msg === '.tp') {
+    bot.chat(`/tp ${bot.username} ${username}`);
+    bot.chat(`On my way to ${username}!`);
+  }
+
+  // 2. Simple Follow (Basic version)
+  if (msg === '.come') {
+    const target = bot.players[username]?.entity;
+    if (!target) {
+      bot.chat("I can't see you! Get closer so I can load your player model.");
+      return;
+    }
+    const pos = target.position;
+    bot.chat("Walking to you...");
+    // This uses the built-in physics to look and walk
+    bot.lookAt(pos);
+    bot.setControlState('forward', true);
+    setTimeout(() => bot.setControlState('forward', false), 2000); // Walk for 2 seconds
+  }
+
+  // 3. Toggle Crystal Aura
+  if (msg === '.ca') {
+    if (crystalAura.enabled) {
+      crystalAura.disable();
+      bot.chat("Crystal Aura: DISABLED");
+    } else {
+      crystalAura.enable();
+      bot.chat("Crystal Aura: ENABLED");
+    }
+  }
+
+  // 4. Status Check
+  if (msg === '.status') {
+    bot.chat(`I'm at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
+  }
+});
+
+// Handle death so it doesn't just sit at the respawn screen
+bot.on('death', () => {
+  console.log('rip');
+  setTimeout(() => bot.respawn(), 1000);
+});
