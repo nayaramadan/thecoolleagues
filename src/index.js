@@ -18,9 +18,18 @@ const crystalAura = new CrystalAura(bot);
 const surround = new Surround(bot);
 
 bot.on('spawn', () => {
-  console.log('Bot spawned! Modules loading...');
+  console.log('Bot spawned! Sending register command...');
+  
+  // Replace 'YourPassword123' with the actual password you want to use
+  bot.chat('/register YourPassword123 YourPassword123');
+  
+  // You might also need to login if you've already registered
+  // bot.chat('/login YourPassword123');
+
   crystalAura.enable();
   surround.enable();
+});
+
 });
 
 // --- COMMAND HANDLER (STRICTER LISTENER) ---
