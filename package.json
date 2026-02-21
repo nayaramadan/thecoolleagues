@@ -2,6 +2,7 @@
   "name": "crystal-pvp-bot",
   "version": "1.0.0",
   "dependencies": {
+    "mindflayer": "^0.1.0-alpha.1",
     "mineflayer": "^4.34.0"
   }
 }
