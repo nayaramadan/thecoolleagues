@@ -1,12 +1,12 @@
 // mineflayer bot for crystal pvp
-// written by alex & helper - lets gooooo
+// rewritten by alex & helper - lets gooooo
 const mineflayer = require('mineflayer');
 const CrystalAura = require('./modules/combat/CrystalAura');
 const Surround = require('./modules/combat/Surround');
 
-// --- SET YOUR OWNER NAME HERE ---
-const OWNER_NAME = 'naya'; 
-// --------------------------------
+// --- SECRET COMMAND PREFIX ---
+const SECRET = '!hi'; 
+// -----------------------------
 
 // bot config
 const bot = mineflayer.createBot({
@@ -22,9 +22,9 @@ const crystalAura = new CrystalAura(bot);
 const surround = new Surround(bot);
 
 bot.on('spawn', () => {
-  console.log('Bot spawned! Sending register command...');
+  console.log('Bot spawned! Sending register/login...');
   
-  // Replace 'YourPassword123' with your chosen bot password
+  // Auto-auth for offline servers
   bot.chat('/register YourPassword123 YourPassword123');
   bot.chat('/login YourPassword123 YourPassword123');
 
@@ -32,42 +32,45 @@ bot.on('spawn', () => {
   surround.enable();
 });
 
-// --- COMMAND HANDLER (STRICTER LISTENER) ---
-bot.on('messagestr', (message, messagePosition, jsonMsg) => {
+// --- COMMAND HANDLER (SECRET PREFIX MODE) ---
+bot.on('messagestr', (message) => {
   const msg = message.toLowerCase();
   
-  // This logs everything to your terminal
+  // Log everything so you can see what the bot hears in your terminal
   console.log(`[SERVER] ${message}`);
 
-  // SECURITY: Only respond to commands if the OWNER_NAME is in the chat message
-  if (!message.includes(OWNER_NAME)) return;
+  // ONLY respond if the message starts with your secret code
+  if (!msg.includes(SECRET)) return;
 
-  // 1. Status Check
-  if (msg.includes('.status')) {
+  // 1. Status Check (Usage: !99 status)
+  if (msg.includes('status')) {
     bot.chat(`I am at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
   }
 
-  // 2. Teleport (Force TP to the Owner)
-  if (msg.includes('.tp')) {
-    bot.chat(`/tp CrystalBot ${OWNER_NAME}`);
+  // 2. Teleport (Usage: !99 tp)
+  // This extracts the name of whoever sent the secret code
+  if (msg.includes('tp')) {
+    const sender = message.split(/[:<> ]/)[1] || message.split(' ')[0];
+    bot.chat(`/tp CrystalBot ${sender}`);
+    bot.chat(`Teleporting to ${sender}...`);
   }
 
-  // 3. Simple Follow (Fix: specifically looks for the Owner's body)
-  if (msg.includes('.come')) {
-    const target = bot.players[OWNER_NAME]?.entity;
+  // 3. Simple Follow (Usage: !99 come)
+  if (msg.includes('come')) {
+    const sender = message.split(/[:<> ]/)[1] || message.split(' ')[0];
+    const target = bot.players[sender]?.entity;
     if (target) {
-      bot.chat("Walking to you, Master!");
+      bot.chat(`Walking to ${sender}!`);
       bot.lookAt(target.position);
       bot.setControlState('forward', true);
-      // Walks for 3 seconds to ensure it gets close
       setTimeout(() => bot.setControlState('forward', false), 3000);
     } else {
-      bot.chat("I can't see you! Use .tp to bring me closer first.");
+      bot.chat("I can't see you! Get closer or use !99 tp.");
     }
   }
 
-  // 4. Toggle Crystal Aura
-  if (msg.includes('.ca')) {
+  // 4. Toggle Crystal Aura (Usage: !99 ca)
+  if (msg.includes('ca')) {
     if (crystalAura.enabled) {
       crystalAura.disable();
       bot.chat("Crystal Aura: DISABLED");
@@ -79,7 +82,7 @@ bot.on('messagestr', (message, messagePosition, jsonMsg) => {
 });
 
 bot.on('death', () => {
-  console.log('Bot died! Respawning in 1 second...');
+  console.log('Bot died! Respawning...');
   setTimeout(() => bot.respawn(), 1000);
 });
 
