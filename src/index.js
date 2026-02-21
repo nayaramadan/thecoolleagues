@@ -23,8 +23,6 @@ const surround = new Surround(bot);
 
 bot.on('spawn', () => {
   console.log('Bot spawned! Sending register/login...');
-  
-  // Auto-auth for offline servers
   bot.chat('/register YourPassword123 YourPassword123');
   bot.chat('/login YourPassword123 YourPassword123');
 
@@ -36,40 +34,52 @@ bot.on('spawn', () => {
 bot.on('messagestr', (message) => {
   const msg = message.toLowerCase();
   
-  // Log everything so you can see what the bot hears in your terminal
+  // Log everything to terminal
   console.log(`[SERVER] ${message}`);
 
-  // ONLY respond if the message starts with your secret code
+  // ONLY respond if the message contains the secret code
   if (!msg.includes(SECRET)) return;
 
-  // 1. Status Check (Usage: !99 status)
+  // --- SMART NAME EXTRACTION ---
+  // This looks at the word right before "!hi" to find who sent it
+  const words = message.split(' ');
+  const secretIndex = words.findIndex(w => w.toLowerCase().includes(SECRET));
+  let sender = words[secretIndex - 1]; 
+  
+  if (sender) {
+    // Clean up characters like < > [ ] : from the name
+    sender = sender.replace(/[<>[\]():]/g, '');
+  }
+
+  // 1. Status Check (Usage: !hi status)
   if (msg.includes('status')) {
     bot.chat(`I am at ${bot.entity.position.floored()}. CA: ${crystalAura.enabled}`);
   }
 
-  // 2. Teleport (Usage: !99 tp)
-  // This extracts the name of whoever sent the secret code
+  // 2. Teleport (Usage: !hi tp)
   if (msg.includes('tp')) {
-    const sender = message.split(/[:<> ]/)[1] || message.split(' ')[0];
-    bot.chat(`/tp CrystalBot ${sender}`);
-    bot.chat(`Teleporting to ${sender}...`);
-  }
-
-  // 3. Simple Follow (Usage: !99 come)
-  if (msg.includes('come')) {
-    const sender = message.split(/[:<> ]/)[1] || message.split(' ')[0];
-    const target = bot.players[sender]?.entity;
-    if (target) {
-      bot.chat(`Walking to ${sender}!`);
-      bot.lookAt(target.position);
-      bot.setControlState('forward', true);
-      setTimeout(() => bot.setControlState('forward', false), 3000);
-    } else {
-      bot.chat("I can't see you! Get closer or use !99 tp.");
+    if (sender) {
+      bot.chat(`/tp CrystalBot ${sender}`);
+      bot.chat(`Teleporting to ${sender}...`);
     }
   }
 
-  // 4. Toggle Crystal Aura (Usage: !99 ca)
+  // 3. Simple Follow (Usage: !hi come)
+  if (msg.includes('come')) {
+    if (sender) {
+      const target = bot.players[sender]?.entity;
+      if (target) {
+        bot.chat(`Walking to ${sender}!`);
+        bot.lookAt(target.position);
+        bot.setControlState('forward', true);
+        setTimeout(() => bot.setControlState('forward', false), 3000);
+      } else {
+        bot.chat(`I can't see ${sender}. Use !hi tp first.`);
+      }
+    }
+  }
+
+  // 4. Toggle Crystal Aura (Usage: !hi ca)
   if (msg.includes('ca')) {
     if (crystalAura.enabled) {
       crystalAura.disable();
