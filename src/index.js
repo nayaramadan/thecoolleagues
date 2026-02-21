@@ -30,8 +30,6 @@ bot.on('spawn', () => {
   surround.enable();
 });
 
-});
-
 // --- COMMAND HANDLER (STRICTER LISTENER) ---
 bot.on('messagestr', (message, messagePosition, jsonMsg) => {
   const msg = message.toLowerCase();
