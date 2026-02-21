@@ -30,7 +30,7 @@ bot.on('spawn', () => {
   surround.enable();
 });
 
-// --- COMMAND HANDLER (SECRET PREFIX MODE) ---
+// --- COMMAND HANDLER (STRICTER NAME EXTRACTION) ---
 bot.on('messagestr', (message) => {
   const msg = message.toLowerCase();
   
@@ -40,16 +40,10 @@ bot.on('messagestr', (message) => {
   // ONLY respond if the message contains the secret code
   if (!msg.includes(SECRET)) return;
 
-  // --- SMART NAME EXTRACTION ---
-  // This looks at the word right before "!hi" to find who sent it
-  const words = message.split(' ');
-  const secretIndex = words.findIndex(w => w.toLowerCase().includes(SECRET));
-  let sender = words[secretIndex - 1]; 
-  
-  if (sender) {
-    // Clean up characters like < > [ ] : from the name
-    sender = sender.replace(/[<>[\]():]/g, '');
-  }
+  // --- IMPROVED NAME EXTRACTION ---
+  // If the format is "<naya> !hi tp", the name is the first word.
+  // We remove < > [ ] : and any spaces.
+  let sender = message.split(' ')[0].replace(/[<>[\]():]/g, '').trim();
 
   // 1. Status Check (Usage: !hi status)
   if (msg.includes('status')) {
@@ -59,8 +53,8 @@ bot.on('messagestr', (message) => {
   // 2. Teleport (Usage: !hi tp)
   if (msg.includes('tp')) {
     if (sender) {
+      console.log(`Attempting to TP to detected sender: ${sender}`);
       bot.chat(`/tp CrystalBot ${sender}`);
-      bot.chat(`Teleporting to ${sender}...`);
     }
   }
 
